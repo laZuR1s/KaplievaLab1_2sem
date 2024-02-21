@@ -1,38 +1,50 @@
 ﻿#include <iostream>
 #include<fstream>
 #include<Windows.h>
-#include<functional> 
+#include<functional>
+#include<iomanip>
+
+// Константы
+const int Rows1 = 5;
+const int Colums1 = 5;
+
 
 // Вспомогательные функции
 bool isFileWithContent(std::ifstream& file);
-void ending(int n);
 template <typename T, typename Predicat>
 void Read_and_check(T& x, std::istream& stream, Predicat condition, const char* message);
 int getRandomInInterval(int a, int b);
-void print(int* arr, int size, const char* message);
 void preambDynamic(short choice, std::ifstream& file, int& Rows, int& Colums);
-void fill_row(int* arr, int a, int b, int Colums = Colums1);
-void fill_row(int* arr, std::istream& stream, int Colums = Colums1);
+
+//
+void fill_row(int* arr, int a, int b, int Colums);
+void fill_row(int* arr, std::istream& stream, int Colums);
 void fill_matrix(int matrix[Rows1][Colums1], int a, int b);
-void fill_matrix(int matrix[Rows1][Colums1], std::istream& stream = std::cin);
-void fill_matrix(int** matrix, int Rows, int Colums, std::istream& stream = std::cin);
+void fill_matrix(int matrix[Rows1][Colums1], std::istream& stream);
+void fill_matrix(int** matrix, int Rows, int Colums, std::istream& stream);
 void fill_matrix(int** matrix, int a, int b, int Rows, int Colums);
+
+void print_row(int* arr, int Colums);
+void print_matrix(int** matrix, int Rows, int Colums);
+void print_matrix(int arr[Rows1][Colums1]);
 
 // Функции связанные с памятью, выделяемой для массивов
 int** memory_allocation(int newRows, int newColums);
 void free_memory(int**& matrix, int Rows);
 
+void transposition(int matrix[Rows1][Colums1]);
+void task1(int matrix[Rows1][Colums1]);
+bool isAllPositive(int* beginrow);
 
 //Менюшки
 int mainMenu();
 int optionMenu();
 
-const int Rows1 = 5;
-const int Colums1 = 5;
 
 int main()
 {
 	SetConsoleOutputCP(1251);
+	srand(GetTickCount());
 
 	short mainChoice;
 	do
@@ -40,22 +52,20 @@ int main()
 		mainChoice = mainMenu();
 		if (mainChoice != 3)
 		{
-			std::cout << "\nВыбран пункт меню: '" << mainChoice << "'\n";
+			std::cout << "\nВыбран пункт меню: '" << mainChoice << "'\n\n";
 			short choice;
 			do
 			{
 				choice = optionMenu();
 				if (choice != 4)
 				{
-					std::cout << "\nВыбран пункт меню: '" << choice << "'\n";
+					std::cout << "\nВыбран пункт меню: '" << choice << "'\n\n";
 
 
 					switch (mainChoice)
 					{
 					case 1:
 					{
-						int size;
-						std::ifstream file("data.txt");
 						int matrix[Rows1][Colums1];
 
 						switch (choice)
@@ -63,52 +73,81 @@ int main()
 						case 1:
 						{
 							std::cout << "Количество столбцов = " << Colums1 << ' ' << "Количество строк = " << Rows1 << '\n';
-
+							std::cout << "\nВведите квадратную матрицу:\n";
+							fill_matrix(matrix, std::cin);
 							break;
 						}
 						case 2:
 						{
-
+							std::ifstream file("matrix_static.txt");
+							if (isFileWithContent(file))
+							{
+								fill_matrix(matrix, file);
+								std::cout << "\nКвадратная матрица:\n";
+								print_matrix(matrix);
+							}
 							break;
+
 						}
 						default:
 						{
 							std::cout << "Количество столбцов = " << Colums1 << ' ' << "Количество строк = " << Rows1 << '\n';
-
+							int a, b;
+							std::cout << "\nВведите диапазон рандома(от A до B): ";
+							Read_and_check(a, std::cin, [](int x) {return true; }, "\n-> ");
+							Read_and_check(b, std::cin, [a](int x) {return x > a; }, "");
+							fill_matrix(matrix, a, b);
+							std::cout << "\nКвадратная матрица:\n";
+							print_matrix(matrix);
 						}
 						}
+						task1(matrix);
 						break;
 					}
 					default:
 					{
-						int size;
-						std::ifstream file("data.txt");
+						std::ifstream file("matrix_dynamic.txt");
 						int Rows = 0, Colums = 0;
 
 						preambDynamic(choice, file, Rows, Colums);
+						int** matrix = memory_allocation(Rows, Colums);
 
 						switch (choice)
 						{
 						case 1:
 						{
-
+							std::cout << "\nВведите квадратную матрицу:\n";
+							fill_matrix(matrix, Rows, Colums, std::cin);
 							break;
 						}
 						case 2:
 						{
-
+							fill_matrix(matrix, Rows, Colums, file);
+							std::cout << "\nКвадратная матрица:\n";
+							print_matrix(matrix, Rows, Colums);
 							break;
 						}
 						default:
 						{
+							int a, b;
+							std::cout << "\nВведите диапазон рандома(от A до B): ";
+							Read_and_check(a, std::cin, [](int x) {return true; }, "\n-> ");
+							Read_and_check(b, std::cin, [a](int x) {return x > a; }, "");
+							fill_matrix(matrix, a, b, Rows, Colums);
+							std::cout << "\nКвадратная матрица:\n";
+							print_matrix(matrix, Rows, Colums);
+						}
+						}
+						//тут таска будет выполняться(для тупых)(для себя)
 
-						}
-						}
+
+						free_memory(matrix, Rows);
 					}
 					}
+
 				}
-			} while (choice != 3);
-			std::cout << "\nВыбран пункт меню: '" << choice << "'\n";
+			} while (choice != 4);
+			std::cout << "\nВыбран пункт меню: '" << choice << "'\n\n";
 
 		}
 	} while (mainChoice != 3);
@@ -137,6 +176,7 @@ int mainMenu()
 int optionMenu()
 {
 	std::cout << "\n--------------\n";
+	std::cout << "\nВыберите вариант ввода\n";
 	std::cout << "\n1. Ввод чисел с клавиатуры" << '\n';
 	std::cout << "2. Ввод чисел из файла" << '\n';
 	std::cout << "3. Случайный набор чисел" << '\n';
@@ -171,36 +211,10 @@ bool isFileWithContent(std::ifstream& file)
 	return result == 1;
 }
 
-void ending(int n)
-{
-	std::cout << "\nВведите " << n << " элемент";
-	if (n < 21 && n>10)
-		std::cout << "ов: ";
-	else
-	{
-		switch (n % 10)
-		{
-		case 1:
-			std::cout << ": ";
-			break;
-		case 2:
-		case 3:
-		case 4:
-			std::cout << "а: ";
-			break;
-		default:
-			std::cout << "ов: ";
-			break;
-
-		}
-	}
-}
-
 int getRandomInInterval(int a, int b)
 {
 	return a + rand() % (b - a + 1);
 }
-
 
 int** memory_allocation(int newRows, int newColums) {
 	int** matrix = new int* [newRows];
@@ -216,26 +230,15 @@ void free_memory(int**& matrix, int Rows)
 	delete[]matrix;
 }
 
-void print(int* arr, int size, const char* message)
-{
-	std::cout << message;
-	for (int i = 0; i < size; i++)
-	{
-		std::cout << arr[i] << ' ';
-	}
-	std::cout << '\n';
-}
-
-
 void preambDynamic(short choice, std::ifstream& file, int& Rows, int& Colums)
 {
 	switch (choice)
 	{
 	case 1:
 	{
-		Read_and_check(Rows, std::cin, [](int x) {return x > 0; }, "Введите количество строк квадратной матрицы\n->");
-		Read_and_check(Colums, std::cin, [Rows](int x) {return x > 0 && Rows == x; }, "Введите количество столбцов квадратной матрицы\n->");
+		Read_and_check(Rows, std::cin, [](int x) {return x > 0; }, "Введите количество строк квадратной матрицы:\n->");
 		std::cin.ignore(std::cin.rdbuf()->in_avail());
+		Read_and_check(Colums, std::cin, [Rows](int x) {return x > 0 && Rows == x; }, "Введите количество столбцов квадратной матрицы:\n->");
 		std::cin.ignore(std::cin.rdbuf()->in_avail());
 		break;
 	}
@@ -247,13 +250,18 @@ void preambDynamic(short choice, std::ifstream& file, int& Rows, int& Colums)
 	}
 	default:
 	{
-		std::cout << "\nВведите количество случайных слагаемых: ";
-		Read_and_check(Rows, std::cin, [](int x) {return x > 0; }, "Введите количество случайных строк\n->");
-		Read_and_check(Colums, std::cin, [Rows](int x) {return x > 0 && Rows == x; }, "Введите количество случайных столбцов\n->");
+		Read_and_check(Rows, std::cin, [](int x) {return x > 0; }, "Введите количество случайных строк:\n->");
+		Read_and_check(Colums, std::cin, [Rows](int x) {return x > 0 && Rows == x; }, "Введите количество случайных столбцов:\n->");
 		std::cin.ignore(std::cin.rdbuf()->in_avail());
 	}
 	}
 }
+void fill_row(int* arr, int a, int b, int Colums)
+{
+	for (int i{ 0 }; i < Colums; ++i)
+		arr[i] = getRandomInInterval(a,b);
+}
+
 void fill_row(int* arr, std::istream& stream, int Colums)
 {
 	for (int i{ 0 }; i < Colums; ++i)
@@ -263,13 +271,13 @@ void fill_row(int* arr, std::istream& stream, int Colums)
 void fill_matrix(int matrix[Rows1][Colums1], int a, int b)
 {
 	for (int i{ 0 }; i < Rows1; ++i)
-		fill_row(matrix[i], a, b);
+		fill_row(matrix[i], a, b, Colums1);
 }
 
 void fill_matrix(int matrix[Rows1][Colums1], std::istream& stream)
 {
 	for (int i{ 0 }; i < Rows1; ++i)
-		fill_row(matrix[i], stream);
+		fill_row(matrix[i], stream, Colums1);
 }
 
 void fill_matrix(int** matrix, int Rows, int Colums, std::istream& stream) {
@@ -281,6 +289,70 @@ void fill_matrix(int** matrix, int a, int b, int Rows, int Colums) {
 	for (int i{ 0 }; i < Rows; ++i)
 		fill_row(matrix[i], a, b, Colums);
 }
+
+void print_row(int* arr, int Colums) {
+	for (int i{ 0 }; i < Colums; ++i)
+		std::cout << std::setw(4) << arr[i];
+	std::cout << '\n';
+}
+
+void print_matrix(int** matrix, int Rows, int Colums) {
+	std::cout << '\n';
+	for (int i{ 0 }; i < Rows; ++i)
+		print_row(matrix[i], Colums);
+}
+
+void print_matrix(int arr[Rows1][Colums1]) {
+	std::cout << '\n';
+	for (int i{ 0 }; i < Rows1; ++i)
+		print_row(arr[i], Colums1);
+}
+
+//функции к решению таск
+
+bool isAllPositive(int* beginrow)
+{
+	bool result = true;
+	int* ptr = beginrow;
+
+	while (result && ptr < beginrow + Colums1)
+	{
+		if (*ptr < 0)
+			result = false;
+		else
+			++ptr;
+	}
+	return result;
+}
+
+void transposition(int matrix[Rows1][Colums1])
+{
+	for (int i = 0; i < Rows1 - 1; ++i)
+		for (int j = i + 1; j < Colums1; ++j)
+			std::swap(matrix[i][j], matrix[j][i]);
+}
+
+void task1(int matrix[Rows1][Colums1])
+{
+	transposition(matrix);
+	int* ptrrows = matrix[0];
+	bool isFind = true;
+	while (ptrrows < matrix[0] + Colums1 * Rows1 && isFind)
+	{
+		if (isAllPositive(ptrrows))
+		{
+			isFind = false;
+			std::cout << "Номер столбца, не содержащий отрицательных элементов: "<< (ptrrows - matrix[0]) / Colums1 + 1 << '\n';
+		}
+		ptrrows += Colums1;
+	}
+	if (isFind)
+	{
+		std::cout << "В матрице нет столбцов без отрицательных элементов!\n";
+	}
+	transposition(matrix);
+}
+
 
 
 template<typename T, typename Predicat>
