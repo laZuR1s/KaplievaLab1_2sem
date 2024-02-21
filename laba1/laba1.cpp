@@ -8,7 +8,6 @@
 const int Rows1 = 5;
 const int Colums1 = 5;
 
-
 // Вспомогательные функции
 bool isFileWithContent(std::ifstream& file);
 template <typename T, typename Predicat>
@@ -16,7 +15,7 @@ void Read_and_check(T& x, std::istream& stream, Predicat condition, const char* 
 int getRandomInInterval(int a, int b);
 void preambDynamic(short choice, std::ifstream& file, int& Rows, int& Colums);
 
-//
+// Заполнение матрицы
 void fill_row(int* arr, int a, int b, int Colums);
 void fill_row(int* arr, std::istream& stream, int Colums);
 void fill_matrix(int matrix[Rows1][Colums1], int a, int b);
@@ -24,6 +23,7 @@ void fill_matrix(int matrix[Rows1][Colums1], std::istream& stream);
 void fill_matrix(int** matrix, int Rows, int Colums, std::istream& stream);
 void fill_matrix(int** matrix, int a, int b, int Rows, int Colums);
 
+// Вывод матрицы
 void print_row(int* arr, int Colums);
 void print_matrix(int** matrix, int Rows, int Colums);
 void print_matrix(int arr[Rows1][Colums1]);
@@ -32,11 +32,18 @@ void print_matrix(int arr[Rows1][Colums1]);
 int** memory_allocation(int newRows, int newColums);
 void free_memory(int**& matrix, int Rows);
 
+// Функции к task1
 void transposition(int matrix[Rows1][Colums1]);
 void task1(int matrix[Rows1][Colums1]);
 bool isAllPositive(int* beginrow);
 
-//Менюшки
+// Функции к task2
+int countDoubleDigits(int* arr, int Colums);
+void swap_rows(int* a, int* b, int Colums);
+void sort_matrix(int** matrix, int Rows, int Colums);
+
+
+// Менюшки
 int mainMenu();
 int optionMenu();
 
@@ -138,13 +145,12 @@ int main()
 							print_matrix(matrix, Rows, Colums);
 						}
 						}
-						//тут таска будет выполняться(для тупых)(для себя)
-
-
+						sort_matrix(matrix, Rows,Colums);
+						std::cout << "\nПреобразованная матрица: " << '\n';
+						print_matrix(matrix, Rows, Colums);
 						free_memory(matrix, Rows);
 					}
 					}
-
 				}
 			} while (choice != 4);
 			std::cout << "\nВыбран пункт меню: '" << choice << "'\n\n";
@@ -256,6 +262,7 @@ void preambDynamic(short choice, std::ifstream& file, int& Rows, int& Colums)
 	}
 	}
 }
+
 void fill_row(int* arr, int a, int b, int Colums)
 {
 	for (int i{ 0 }; i < Colums; ++i)
@@ -308,8 +315,6 @@ void print_matrix(int arr[Rows1][Colums1]) {
 		print_row(arr[i], Colums1);
 }
 
-//функции к решению таск
-
 bool isAllPositive(int* beginrow)
 {
 	bool result = true;
@@ -342,7 +347,7 @@ void task1(int matrix[Rows1][Colums1])
 		if (isAllPositive(ptrrows))
 		{
 			isFind = false;
-			std::cout << "Номер столбца, не содержащий отрицательных элементов: "<< (ptrrows - matrix[0]) / Colums1 + 1 << '\n';
+			std::cout << "\nНомер столбца, не содержащий отрицательных элементов: "<< (ptrrows - matrix[0]) / Colums1 + 1 << '\n';
 		}
 		ptrrows += Colums1;
 	}
@@ -353,7 +358,37 @@ void task1(int matrix[Rows1][Colums1])
 	transposition(matrix);
 }
 
+int countDoubleDigits(int* arr,int Colums)
+{
+	int result = 0;
+	for (int i = 0; i < Colums; ++i)
+	{
+		if (abs(arr[i]) >= 10 && abs(arr[i]) <= 99)
+			++result;
+	}
+	return result;
+}
 
+void swap_rows(int* a, int* b,int Colums)
+{
+	for (int i = 0; i < Colums; ++i)
+		std::swap(a[i], b[i]);
+}
+
+void sort_matrix(int** matrix,int Rows,int Colums)
+{
+	int* tmp = new int [Rows];
+	
+	for (int i = 0; i < Rows; ++i)
+		tmp[i] = countDoubleDigits(matrix[i],Colums);
+	for (int j = Rows; j >= 2; j--)
+		for (int i = 0; i < j - 1; ++i)
+			if (tmp[i] > tmp[i + 1])
+			{
+				swap_rows(matrix[i], matrix[i + 1],Colums);
+				std::swap(tmp[i], tmp[i + 1]);
+			}
+}
 
 template<typename T, typename Predicat>
 void Read_and_check(T& x, std::istream& stream, Predicat condition, const char* message)
